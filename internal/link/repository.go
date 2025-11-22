@@ -49,16 +49,16 @@ func (repo *LinkRepository) Delete(id uint) error {
 	return nil
 }
 
-func (repo *LinkRepository) GetById(id uint) (*Link, error) {
-	var link Link
-	result := repo.Database.DB.First(&link, id)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-	return &link, nil
+func (repo *LinkRepository) Count() int64 {
+	var count int64
+	repo.Database.
+		Table("links").
+		Where("deleted_at is null").
+		Count(&count)
+	return count
 }
 
-func (repo *LinkRepository) GetLinks(limit, offset int) []Link {
+func (repo *LinkRepository) GetAll(limit, offset int) []Link {
 	var links []Link
 	repo.Database.
 		Table("links").
