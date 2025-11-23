@@ -4,13 +4,43 @@ import (
 	"bytes"
 	"encoding/json"
 	"go/adv-demo/internal/auth"
+	"go/adv-demo/internal/user"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/joho/godotenv"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
+func initDb() *gorm.DB {
+	err := godotenv.Load(".env")
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(postgres.Open(os.Getenv("DSN")), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+
+func initData(db *gorm.DB) {
+	db.Create(&user.User{
+		Email:    "a2@a.ru",
+		Password: "$2a$10$fOFzfotZx.uhK2BkJTy4AuVb6ejteFYEUkREKD/nBR6fZx4afcmYS",
+		Name:     "Вася",
+	})
+}
+
 func TestLoginSuccess(t *testing.T) {
+	// Prepare
+	db := initDb()
+	initData(db)
+
 	ts := httptest.NewServer(App())
 	defer ts.Close()
 
